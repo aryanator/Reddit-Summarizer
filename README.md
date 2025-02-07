@@ -14,7 +14,7 @@ A web app that fetches and summarizes the latest posts from any Reddit subreddit
 3. View the summarized posts.
 
 ## Live Demo
-[Click here to try the app!]([https://reddit-summarizer.streamlit.app](https://reddit-summarixer.streamlit.app/))
+[Click here to try the app!]([https://reddit-summarixer.streamlit.app/])
 
 ## Technologies Used
 - Python
