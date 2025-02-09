@@ -1,4 +1,4 @@
-streamlit==1.29.0
+streamlit==1.37.0
 praw==7.7.1
 transformers==4.36.2
 torch==2.6.0
