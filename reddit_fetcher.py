@@ -1,7 +1,7 @@
 import praw
 import re
 from transformers import pipeline
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+#from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 from collections import Counter
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
