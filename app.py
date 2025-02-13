@@ -9,6 +9,18 @@ from reddit_fetcher import (
 import matplotlib.pyplot as plt
 from collections import Counter
 import time
+from transformers import pipeline, AutoModelForSeq2SeqLM, AutoTokenizer
+
+# Cache the model and tokenizer to load only once
+@st.cache_resource
+def load_summarization_model():
+    model = AutoModelForSeq2SeqLM.from_pretrained("model")  # Path to your model
+    tokenizer = AutoTokenizer.from_pretrained("model")  # Path to your tokenizer
+    summarizer = pipeline("summarization", model=model, tokenizer=tokenizer, device="cpu")
+    return summarizer
+
+# Load the summarization model once
+summarizer = load_summarization_model()
 
 # Streamlit app
 st.title("Reddit Posts Summarizer and Analyzer")
@@ -43,7 +55,7 @@ if subreddit_name:
     if show_summary:
         st.write(f"### Summarizing the top {limit} posts from r/{subreddit_name}:")
         with st.spinner("Generating summaries..."):
-            summaries = summarize_posts(posts)
+            summaries = summarize_posts(posts, summarizer=summarizer)  # Pass the cached summarizer
             for i, summary in enumerate(summaries):
                 st.write(f"**Title:** {summary['title']}")
                 st.write(f"**Post Summary:** {summary['post_summary']}")
