@@ -2,25 +2,29 @@ import streamlit as st
 from reddit_fetcher import (
     fetch_posts,
     summarize_posts,
-    summarize_comments,
     get_sentiment_distribution,
     generate_word_cloud,
 )
 import matplotlib.pyplot as plt
-from collections import Counter
 import time
 from transformers import pipeline, AutoModelForSeq2SeqLM, AutoTokenizer
 
-# Cache the model and tokenizer to load only once
+# Cache the summarization model to load only once
 @st.cache_resource
 def load_summarization_model():
-    model = AutoModelForSeq2SeqLM.from_pretrained("model")  # Path to your model
-    tokenizer = AutoTokenizer.from_pretrained("model")  # Path to your tokenizer
+    model = AutoModelForSeq2SeqLM.from_pretrained("facebook/bart-large-cnn")
+    tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn")
     summarizer = pipeline("summarization", model=model, tokenizer=tokenizer, device="cpu")
     return summarizer
 
-# Load the summarization model once
+# Cache the sentiment analysis model to load only once
+@st.cache_resource
+def load_sentiment_analyzer():
+    return pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+
+# Load the models once
 summarizer = load_summarization_model()
+sentiment_analyzer = load_sentiment_analyzer()
 
 # Streamlit app
 st.title("Reddit Posts Summarizer and Analyzer")
@@ -55,7 +59,7 @@ if subreddit_name:
     if show_summary:
         st.write(f"### Summarizing the top {limit} posts from r/{subreddit_name}:")
         with st.spinner("Generating summaries..."):
-            summaries = summarize_posts(posts, summarizer=summarizer)  # Pass the cached summarizer
+            summaries = summarize_posts(posts, summarizer)  # Pass the cached summarizer
             for i, summary in enumerate(summaries):
                 st.write(f"**Title:** {summary['title']}")
                 st.write(f"**Post Summary:** {summary['post_summary']}")
@@ -67,7 +71,7 @@ if subreddit_name:
     if show_sentiment:
         st.write("### Sentiment Analysis of the Subreddit")
         with st.spinner("Analyzing sentiment..."):
-            sentiment_distribution = get_sentiment_distribution(posts)
+            sentiment_distribution = get_sentiment_distribution(posts, sentiment_analyzer)
             
             # Display sentiment distribution as a bar chart
             st.write("**Sentiment Distribution**")
