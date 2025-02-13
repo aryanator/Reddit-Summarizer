@@ -12,11 +12,9 @@ from transformers import pipeline, AutoModelForSeq2SeqLM, AutoTokenizer
 # Cache the summarization model to load only once
 @st.cache_resource
 def load_summarization_model():
-    st.write("Loading summarization model...")
-    model = AutoModelForSeq2SeqLM.from_pretrained("t5-small")
-    tokenizer = AutoTokenizer.from_pretrained("t5-small")
-    summarizer = pipeline("summarization", model=model, tokenizer=tokenizer, device=0)  # Use GPU
-    st.write("Summarization model loaded!")
+    model = AutoModelForSeq2SeqLM.from_pretrained("facebook/bart-large-cnn")
+    tokenizer = AutoTokenizer.from_pretrained("facebook/bart-large-cnn")
+    summarizer = pipeline("summarization", model=model, tokenizer=tokenizer, device="cpu")
     return summarizer
 
 # Cache the sentiment analysis model to load only once
