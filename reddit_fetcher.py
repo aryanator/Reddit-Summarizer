@@ -1,23 +1,8 @@
 import praw
 import re
 from transformers import pipeline
-#from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 from collections import Counter
-import matplotlib.pyplot as plt
 from wordcloud import WordCloud
-
-# Force CPU usage
-device = "cpu"
-
-# Load the saved model and tokenizer
-#model = AutoModelForSeq2SeqLM.from_pretrained("model")  # Path to your downloaded model folder
-#tokenizer = AutoTokenizer.from_pretrained("model")  # Path to your downloaded tokenizer folder
-
-# Initialize the summarizer pipeline with the downloaded model and tokenizer
-#summarizer = pipeline("summarization", model=model, tokenizer=tokenizer, device=0 if device == "cuda" else -1)
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn", device=0 if device == "cuda" else -1)
-# Load the sentiment analysis model
-sentiment_analyzer = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
 
 # Replace with your Reddit API credentials
 CLIENT_ID = "G6R7wy_ArTl2L3zuqFB8sA"
@@ -69,9 +54,9 @@ def clean_text(text):
     text = " ".join(text.split())
     return text
 
-def summarize_text(text, max_length=50, min_length=25):
+def summarize_text(text, summarizer, max_length=50, min_length=25):
     """
-    Summarize text using the fine-tuned model.
+    Summarize text using the provided summarizer.
     """
     text = clean_text(text)
     if len(text.split()) < 5:  # Skip if the text is too short
@@ -85,40 +70,40 @@ def summarize_text(text, max_length=50, min_length=25):
         print(f"Error summarizing text: {e}")
         return text
 
-def summarize_post(post):
+def summarize_post(post, summarizer):
     """
-    Summarize a post's title and body.
+    Summarize a post's title and body using the provided summarizer.
     """
     text = f"{post['title']}. {post['body']}"
-    return summarize_text(text)
+    return summarize_text(text, summarizer)
 
-def summarize_comments(comments):
+def summarize_comments(comments, summarizer):
     """
-    Summarize a list of comments.
+    Summarize a list of comments using the provided summarizer.
     """
     combined_comments = " ".join(comments)
-    return summarize_text(combined_comments)
+    return summarize_text(combined_comments, summarizer)
 
-def analyze_sentiment(text):
+def analyze_sentiment(text, sentiment_analyzer):
     """
     Analyze the sentiment of a text using a pretrained model.
     """
     result = sentiment_analyzer(text)[0]
     return result["label"], result["score"]  # Returns label (POSITIVE/NEGATIVE) and confidence score
 
-def get_sentiment_distribution(posts):
+def get_sentiment_distribution(posts, sentiment_analyzer):
     """
     Get sentiment distribution for all posts and comments.
     """
     sentiments = []
     for post in posts:
         # Analyze sentiment of the post
-        post_label, post_score = analyze_sentiment(post["body"])
+        post_label, post_score = analyze_sentiment(post["body"], sentiment_analyzer)
         sentiments.append(post_label)
         
         # Analyze sentiment of the comments
         for comment in post["comments"]:
-            comment_label, comment_score = analyze_sentiment(comment)
+            comment_label, comment_score = analyze_sentiment(comment, sentiment_analyzer)
             sentiments.append(comment_label)
     
     # Count sentiment labels
@@ -135,14 +120,14 @@ def generate_word_cloud(posts):
     wordcloud = WordCloud(width=800, height=400, background_color="white").generate(combined_text)
     return wordcloud
 
-def summarize_posts(posts):
+def summarize_posts(posts, summarizer):
     """
-    Summarize a list of posts and their comments.
+    Summarize a list of posts and their comments using the provided summarizer.
     """
     summaries = []
     for post in posts:
-        post_summary = summarize_post(post)
-        comment_summary = summarize_comments(post["comments"])
+        post_summary = summarize_post(post, summarizer)
+        comment_summary = summarize_comments(post["comments"], summarizer)
         summaries.append({
             "title": post["title"],
             "post_summary": post_summary,
