@@ -21,6 +21,7 @@ A web app that fetches and summarizes the latest posts from any Reddit subreddit
 - Streamlit
 - PRAW (Python Reddit API Wrapper)
 - Hugging Face Transformers
+- AWS(Sagemaker, S3)
 
 ## Installation
 To run the app locally:
