@@ -5,6 +5,7 @@ import json
 sagemaker_runtime = boto3.client("sagemaker-runtime", region_name="your-region")
 
 # SageMaker endpoint name
+# I edited out my endpoint because of exhausation of free credits
 ENDPOINT_NAME = "your-sagemaker-endpoint-name"
 
 def summarize_post(post):
